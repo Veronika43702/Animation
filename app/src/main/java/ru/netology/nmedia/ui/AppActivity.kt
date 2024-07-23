@@ -9,10 +9,14 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
         super.onCreate(savedInstanceState)
 
         findViewById<StatsView>(R.id.stats).data = listOf(
-            0.25F,
-            0.25F,
-            0.25F,
-            0.25F,
+            // первый элемент - указание общего количества
+            2000F,
+            // эелементы (в количестве до суммы, указанной в первом элементе)
+            500F,
+            500F,
+            500F,
+            250F,
+            250F
         )
     }
 }

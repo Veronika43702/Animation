@@ -42,6 +42,16 @@ class StatsView @JvmOverloads constructor(
         strokeCap = Paint.Cap.ROUND
         strokeJoin = Paint.Join.ROUND
     }
+
+    // Paint() для серого круга для пустых дуг
+    private val paintCircle = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        strokeWidth = lineWidth
+        strokeCap = Paint.Cap.ROUND
+        strokeJoin = Paint.Join.ROUND
+        color = 0xFFf0f0f0.toInt()
+    }
+
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
         textAlign = Paint.Align.CENTER
@@ -68,20 +78,41 @@ class StatsView @JvmOverloads constructor(
             return
         }
 
+        // серый круг для пустых дуг
+        canvas.drawCircle(center.x, center.y, radius, paintCircle)
+
         var startFrom = -90F
+        var sumOfElements = 0F
+        var colorOfFirstElement = 0
         for ((index, datum) in data.withIndex()) {
-            val angle = 360F * datum
-            paint.color = colors.getOrNull(index) ?: randomColor()
+            if (index == 0) {
+                continue
+            }
+
+            val total = data[0]
+            val percent = datum / total
+            val angle = 360F * percent
+
+            val color = colors.getOrNull(index) ?: randomColor()
+            // запоминание цвета первого элемента
+            if (index == 1) { colorOfFirstElement = color}
+            paint.color = color
             canvas.drawArc(oval, startFrom, angle, false, paint)
             startFrom += angle
+
+            sumOfElements += datum
         }
 
         canvas.drawText(
-            "%.2f%%".format(data.sum() * 100),
+            "%.2f%%".format(sumOfElements / data[0] * 100),
             center.x,
             center.y + textPaint.textSize / 4,
             textPaint,
         )
+
+        // отрисовка начала первого элемента сверху на последнем
+        paint.color = colorOfFirstElement
+        canvas.drawArc(oval, -90F , 5F, false, paint)
     }
 
     private fun randomColor() = Random.nextInt(0xFF000000.toInt(), 0xFFFFFFFF.toInt())
